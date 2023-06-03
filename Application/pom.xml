@@ -6,19 +6,28 @@
         <artifactId>JAVA</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>DAO</artifactId>
+    <artifactId>Application</artifactId>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>8.4.1.jre14</version>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>DAO</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>Utilities</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
-    
     <properties>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
-        <exec.mainClass>hr.algebra.DAO</exec.mainClass>
+        <exec.mainClass>hr.algebra.Application</exec.mainClass>
     </properties>
 </project>

@@ -9,8 +9,8 @@
     <artifactId>Utilities</artifactId>
     <packaging>jar</packaging>
     <properties>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>14</maven.compiler.source>
+        <maven.compiler.target>14</maven.compiler.target>
         <exec.mainClass>hr.algebra.utilities.Utilities</exec.mainClass>
     </properties>
 </project>

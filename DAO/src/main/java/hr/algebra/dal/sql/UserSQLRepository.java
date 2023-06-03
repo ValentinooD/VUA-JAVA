@@ -1,5 +1,6 @@
 package hr.algebra.dal.sql;
 
+import hr.algebra.model.Role;
 import hr.algebra.model.User;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -14,15 +15,38 @@ public class UserSQLRepository {
     private static final String ID_USER = "IDUser";
     private static final String USERNAME = "Username";
     private static final String PASSWORD = "Password";
-    private static final String IS_ADMINISTRATOR = "Administrator";
+    private static final String ROLE = "Role";
     
     private static final String SUCCESS = "Success";
 
-    private static final String CREATE_USER = "{ CALL createUser (?,?,?,?,?,?) }";
-    private static final String UPDATE_USER = "{ CALL updateUser (?,?,?,?,?,?) }";
+    private static final String CREATE_USER = "{ CALL createUser (?,?,?,?,?) }";
+    private static final String UPDATE_USER = "{ CALL updateUser (?,?,?,?,?) }";
     private static final String DELETE_USER = "{ CALL deleteUser (?) }";
     private static final String SELECT_USER = "{ CALL selectUser (?) }";
     private static final String SELECT_USERS = "{ CALL selectUsers }";
+    private static final String AUTHENCIATE_USER = "{ CALL authenticateUser(?,?) }";
+    
+    /////////////////////////////////////////////////////
+    
+    public Optional<User> authenticate(String username, String password) throws Exception {
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(AUTHENCIATE_USER);) {
+
+            stmt.setString(USERNAME, username);
+            stmt.setString(PASSWORD, password);
+
+            try (ResultSet rs = stmt.executeQuery();) {
+                if (rs.next()) {
+                    return Optional.of(new User(
+                            rs.getInt(ID_USER),
+                            rs.getString(USERNAME), 
+                            rs.getString(PASSWORD),
+                            Role.valueOf(rs.getString(ROLE))));
+                }
+            }
+        }
+        return Optional.empty();
+    }
     
     public List<User> selectUsers() throws Exception {
         List<User> list = new ArrayList<>();
@@ -36,7 +60,7 @@ public class UserSQLRepository {
                             rs.getInt(ID_USER),
                             rs.getString(USERNAME), 
                             rs.getString(PASSWORD),
-                            rs.getBoolean(IS_ADMINISTRATOR)));
+                            Role.valueOf(rs.getString(ROLE))));
             }
         }
 
@@ -55,7 +79,7 @@ public class UserSQLRepository {
                             rs.getInt(ID_USER),
                             rs.getString(USERNAME), 
                             rs.getString(PASSWORD),
-                            rs.getBoolean(IS_ADMINISTRATOR)));
+                            Role.valueOf(rs.getString(ROLE))));
                 }
             }
         }
@@ -67,14 +91,14 @@ public class UserSQLRepository {
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(CREATE_USER);) {
             stmt.setString(USERNAME, user.getUsername());
             stmt.setString(PASSWORD, user.getPassword());
-            stmt.setBoolean(IS_ADMINISTRATOR, user.isAdministrator());
+            stmt.setString(ROLE, user.getRole().name());
             
             stmt.registerOutParameter(SUCCESS, Types.BIT);
             stmt.registerOutParameter(ID_USER, Types.INTEGER);
 
             stmt.executeUpdate();
 
-            if (stmt.getBoolean(SUCCESS))
+            if (!stmt.getBoolean(SUCCESS))
                 throw new RuntimeException("User already exists");
             
             return stmt.getInt(ID_USER);
@@ -87,7 +111,7 @@ public class UserSQLRepository {
             stmt.setInt(ID_USER, id);
             stmt.setString(USERNAME, user.getUsername());
             stmt.setString(PASSWORD, user.getPassword());
-            stmt.setBoolean(IS_ADMINISTRATOR, user.isAdministrator());
+            stmt.setString(ROLE, user.getRole().name());
             
             stmt.registerOutParameter(SUCCESS, Types.BIT);
 

@@ -11,7 +11,8 @@ import javax.sql.DataSource;
 public class DataSourceSingleton {    
     private static final String PATH = "/config/db.properties";
 
-    private static final String SERVER_NAME = "SERVER_NAME";
+    private static final String SERVER_HOST = "SERVER_HOST";
+    private static final String SERVER_PORT = "SERVER_PORT";
     private static final String DATABASE_NAME = "DATABASE_NAME";
     private static final String USER = "USER";
     private static final String PASSWORD = "PASSWORD";
@@ -41,7 +42,8 @@ public class DataSourceSingleton {
 
     private static DataSource createInstance() {
         SQLServerDataSource dataSource = new SQLServerDataSource();
-        dataSource.setServerName(properties.getProperty(SERVER_NAME));
+        dataSource.setServerName(properties.getProperty(SERVER_HOST));
+        dataSource.setPortNumber(Integer.parseInt(properties.getProperty(SERVER_PORT)));
         dataSource.setDatabaseName(properties.getProperty(DATABASE_NAME));
         dataSource.setUser(properties.getProperty(USER));
         dataSource.setPassword(properties.getProperty(PASSWORD));
