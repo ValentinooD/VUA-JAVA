@@ -4,12 +4,13 @@
  */
 package hr.algebra;
 
-import hr.algebra.dal.IDataRepository;
 import hr.algebra.model.User;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.Optional;
+import hr.algebra.dal.IDatabase;
+import hr.algebra.dal.repos.IUserRepository;
 
 /**
  *
@@ -18,12 +19,12 @@ import java.util.Optional;
 public class LoginFrame extends javax.swing.JFrame {
 
     private User user;
-    private IDataRepository repo;
+    private IUserRepository<User> userRepo;
 
     private Callback<User> callback;
     
-    public LoginFrame(IDataRepository repository) {
-        this.repo = repository;
+    public LoginFrame(IUserRepository<User> userRepo) {
+        this.userRepo = userRepo;
         initComponents();
         
         clearErrors();
@@ -137,10 +138,10 @@ public class LoginFrame extends javax.swing.JFrame {
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         String username = tfUsername.getText();
-        String password = tfPassword.getText();
+        String password = new String(tfPassword.getPassword());
         
         try {
-            Optional<User> optUser = repo.authenticate(username, password);
+            Optional<User> optUser = userRepo.authenticate(username, password);
 
             if (optUser.isEmpty()) {
                 setError("Incorrect username or password.");
@@ -160,18 +161,18 @@ public class LoginFrame extends javax.swing.JFrame {
 
     private void loginInformationKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginInformationKeyReleased
        String username = tfUsername.getText();
-       String password = tfPassword.getText();
+       String password = new String(tfPassword.getPassword());
         
        btnLogin.setEnabled(!(username.isEmpty() && password.isEmpty()));
     }//GEN-LAST:event_loginInformationKeyReleased
 
     private void btnCreateAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAccountActionPerformed
         String username = tfUsername.getText();
-        String password = tfPassword.getText();
+        String password = new String(tfPassword.getPassword());
         
         setEnabled(false);
         
-        RegisterFrame frame = new RegisterFrame(repo, username.trim(), password);
+        RegisterFrame frame = new RegisterFrame(userRepo, username.trim(), password);
         frame.setVisible(true);
         
         frame.setCallback(user -> {

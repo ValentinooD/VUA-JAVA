@@ -1,5 +1,6 @@
 package hr.algebra.dal.sql;
 
+import hr.algebra.dal.repos.IUserRepository;
 import hr.algebra.model.Role;
 import hr.algebra.model.User;
 import java.sql.CallableStatement;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 
-public class UserSQLRepository {
+public class UserSQLRepository implements IUserRepository<User> {
     private static final String ID_USER = "IDUser";
     private static final String USERNAME = "Username";
     private static final String PASSWORD = "Password";
@@ -29,6 +30,7 @@ public class UserSQLRepository {
     
     /////////////////////////////////////////////////////
     
+    @Override
     public Optional<User> authenticate(String username, String password) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(AUTHENCIATE_USER);) {
@@ -49,7 +51,8 @@ public class UserSQLRepository {
         return Optional.empty();
     }
     
-    public Collection<User> selectUsers() throws Exception {
+    @Override
+    public Collection<User> selectMultiple() throws Exception {
         List<User> list = new ArrayList<>();
 
         DataSource dataSource = DataSourceSingleton.getInstance();
@@ -68,7 +71,8 @@ public class UserSQLRepository {
         return list;
     }
 
-    public Optional<User> selectUser(int id) throws Exception {
+    @Override
+    public Optional<User> select(int id) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(SELECT_USER);) {
 
@@ -87,7 +91,8 @@ public class UserSQLRepository {
         return Optional.empty();
     }
 
-    public int createUser(User user) throws Exception {
+    @Override
+    public int create(User user) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(CREATE_USER);) {
             stmt.setString(USERNAME, user.getUsername());
@@ -106,7 +111,8 @@ public class UserSQLRepository {
         }
     }     
 
-    public boolean updateUser(int id, User user) throws Exception {
+    @Override
+    public boolean update(int id, User user) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(UPDATE_USER);) {
             stmt.setInt(ID_USER, id);
@@ -122,7 +128,8 @@ public class UserSQLRepository {
         }
     }
 
-    public boolean deleteUser(int id) throws Exception {
+    @Override
+    public boolean delete(int id) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(DELETE_USER);) {
 

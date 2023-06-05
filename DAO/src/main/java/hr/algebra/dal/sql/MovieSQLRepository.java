@@ -1,6 +1,5 @@
 package hr.algebra.dal.sql;
 
-import hr.algebra.dal.IDataRepositoryCRUD;
 import hr.algebra.model.Actor;
 import hr.algebra.model.Director;
 import hr.algebra.model.Movie;
@@ -16,9 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
+import hr.algebra.dal.IDataRepository;
+import hr.algebra.dal.IDatabase;
 
 
-public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
+public class MovieSQLRepository implements IDataRepository<Movie> {
     private static final String ID_MOVIE = "IDMovie";
     private static final String MOVIE_ID = "MovieID";
     private static final String TITLE = "Title";
@@ -40,10 +41,10 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
 
     private ActorSQLRepository actorRepo;
     private DirectorSQLRepository directorRepo;
-
-    public MovieSQLRepository(ActorSQLRepository actorRepo, DirectorSQLRepository directorRepo) {
-        this.actorRepo = actorRepo;
-        this.directorRepo = directorRepo;
+ 
+    public MovieSQLRepository(IDatabase database) {
+        this.actorRepo = (ActorSQLRepository) database.getRepository(Actor.class);
+        this.directorRepo = (DirectorSQLRepository) database.getRepository(Director.class);
     }
     
     @Override
@@ -55,8 +56,8 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
                 CallableStatement stmt = con.prepareCall(SELECT_MOVIES); 
                 ResultSet rs = stmt.executeQuery();) {
             while (rs.next()) {
-                Set<Director> directors = (HashSet<Director>) directorRepo.getDirectorsForMovie(rs.getInt(ID_MOVIE));
-                Set<Actor> actors = (HashSet<Actor>) actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
+                Set<Director> directors = (HashSet<Director>) directorRepo.getForMovie(rs.getInt(ID_MOVIE));
+                Set<Actor> actors = (HashSet<Actor>) actorRepo.getForMovie(rs.getInt(ID_MOVIE));
                 
                 Movie movie = new Movie(
                         rs.getInt(ID_MOVIE), 
@@ -87,8 +88,8 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
 
             try (ResultSet rs = stmt.executeQuery();) {
                 if (rs.next()) {
-                    Set<Director> directors = (HashSet<Director>) directorRepo.getDirectorsForMovie(rs.getInt(ID_MOVIE));
-                    Set<Actor> actors = (HashSet<Actor>) actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
+                    Set<Director> directors = (HashSet<Director>) directorRepo.getForMovie(rs.getInt(ID_MOVIE));
+                    Set<Actor> actors = (HashSet<Actor>) actorRepo.getForMovie(rs.getInt(ID_MOVIE));
 
                     Movie movie = new Movie(
                             rs.getInt(ID_MOVIE), 
@@ -131,8 +132,8 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
             if (!stmt.getBoolean(SUCCESS))
                 throw new RuntimeException("Creation failed");
             
-            actorRepo.addActorsToMovie(stmt.getInt(ID_MOVIE), item.getActors());
-            directorRepo.addDirectorsToMovie(stmt.getInt(ID_MOVIE), item.getDirectors());
+            actorRepo.addToMovie(stmt.getInt(ID_MOVIE), item.getActors());
+            directorRepo.addToMovie(stmt.getInt(ID_MOVIE), item.getDirectors());
             
             return stmt.getInt(ID_MOVIE);
         }

@@ -2,8 +2,7 @@ package hr.algebra;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.IntelliJTheme;
-import hr.algebra.dal.DataRepositoryFactory;
-import hr.algebra.dal.IDataRepository;
+import hr.algebra.dal.DatabaseFactory;
 import hr.algebra.model.Actor;
 import hr.algebra.model.Director;
 import hr.algebra.model.Movie;
@@ -27,15 +26,23 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.FileChooserUI;
+import hr.algebra.dal.IDatabase;
+import hr.algebra.dal.repos.IUserRepository;
+import hr.algebra.utilities.FileUtils;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.util.Collection;
+import java.util.Optional;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.xml.bind.JAXB;
 
 public class Application extends javax.swing.JFrame {
 
     private User user;
-    private final IDataRepository repository;
+    private final IDatabase database;
     
     private MoviesTableModel tblModel;
     private List<Movie> movies;
@@ -46,7 +53,7 @@ public class Application extends javax.swing.JFrame {
     
     public Application(User user) {
         this.user = user;
-        this.repository = DataRepositoryFactory.getRepository();
+        this.database = DatabaseFactory.getDatabase();
         this.listModelActors = new DefaultListModel<>();
         this.listModelDirectors = new DefaultListModel<>();
         this.tblModel = new MoviesTableModel(new ArrayList<>());
@@ -77,7 +84,7 @@ public class Application extends javax.swing.JFrame {
         btnSave = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         tfPicturePath = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        btnIconPath = new javax.swing.JButton();
         lbBanner = new javax.swing.JLabel();
         btnAddPerson = new javax.swing.JButton();
         btnRemovePerson = new javax.swing.JButton();
@@ -87,9 +94,10 @@ public class Application extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         lsDirectors = new javax.swing.JList<>();
         btnClear = new javax.swing.JButton();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        menuBar = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miLogout = new javax.swing.JMenuItem();
+        miExportToXML = new javax.swing.JMenuItem();
         miExit = new javax.swing.JMenuItem();
         mAdmin = new javax.swing.JMenu();
         miUserMng = new javax.swing.JMenuItem();
@@ -148,10 +156,10 @@ public class Application extends javax.swing.JFrame {
 
         tfPicturePath.setEditable(false);
 
-        jButton1.setText("...");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnIconPath.setText("...");
+        btnIconPath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnIconPathActionPerformed(evt);
             }
         });
 
@@ -198,6 +206,14 @@ public class Application extends javax.swing.JFrame {
         });
         mFile.add(miLogout);
 
+        miExportToXML.setText("Export to XML");
+        miExportToXML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miExportToXMLActionPerformed(evt);
+            }
+        });
+        mFile.add(miExportToXML);
+
         miExit.setText("Exit");
         miExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -206,7 +222,7 @@ public class Application extends javax.swing.JFrame {
         });
         mFile.add(miExit);
 
-        jMenuBar1.add(mFile);
+        menuBar.add(mFile);
 
         mAdmin.setText("Admin");
 
@@ -237,9 +253,9 @@ public class Application extends javax.swing.JFrame {
         });
         mAdmin.add(miClearDatabase);
 
-        jMenuBar1.add(mAdmin);
+        menuBar.add(mAdmin);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -267,7 +283,7 @@ public class Application extends javax.swing.JFrame {
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(tfPicturePath)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jButton1))
+                                        .addComponent(btnIconPath))
                                     .addComponent(lbBanner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,7 +326,7 @@ public class Application extends javax.swing.JFrame {
                         .addComponent(lbBanner)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1)
+                            .addComponent(btnIconPath)
                             .addComponent(tfPicturePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -328,6 +344,11 @@ public class Application extends javax.swing.JFrame {
             mAdmin.setVisible(false);
         }
 
+        // Make it not resizable cause it keeps messing stuff up
+        tfPicturePath.setMinimumSize(tfPicturePath.getSize());
+        tfPicturePath.setMaximumSize(tfPicturePath.getSize());
+
+        pack();
         setMinimumSize(getSize());
         
         initPicture();
@@ -363,8 +384,11 @@ public class Application extends javax.swing.JFrame {
             try {
                 setLoading(true);
                 
-                repository.fillDatabase(RSSParser.getItems());
-                movies = new ArrayList<>(repository.selectMovies());
+                for (Movie movie : RSSParser.getItems()) {
+                    database.getRepository(Movie.class).create(movie);
+                }
+                
+                movies = new ArrayList<>(database.getRepository(Movie.class).selectMultiple());
                 
                 loadTable();
                 setLoading(false);
@@ -399,23 +423,19 @@ public class Application extends javax.swing.JFrame {
     private void btnAddPersonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPersonActionPerformed
         
         setEnabled(false);
-        CreatePersonForm form = new CreatePersonForm(
-                (tpPeople.getSelectedIndex() == 0 ? Actor.class : Director.class)
-        );
-        
-        form.setCallback(p -> {
-            try {
-                if (p instanceof Actor)
-                    selectedMovie.getActors().add((Actor) p);
-                else
-                    selectedMovie.getDirectors().add((Director) p);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        CreatePersonForm form = new CreatePersonForm() {
+            @Override
+            public void create(String firstName, String lastName) {
+                if (tpPeople.getSelectedIndex() == 0) {
+                    selectedMovie.getActors().add(new Actor(firstName, lastName));
+                } else {
+                    selectedMovie.getDirectors().add(new Director(firstName, lastName));
+                }
+                
+                loadActorList();
+                loadDirectorList();
             }
-            
-            loadActorList();
-            loadDirectorList();
-        });
+        };
 
         form.setVisible(true);
 
@@ -436,7 +456,9 @@ public class Application extends javax.swing.JFrame {
             
             selectedMovie.getActors().remove(lsActors.getSelectedValue());
         } else {
-            // TODO
+            if (lsDirectors.getSelectedValue() == null) return;
+            
+            selectedMovie.getDirectors().remove(lsDirectors.getSelectedValue());
         }
         
         loadActorList();
@@ -444,19 +466,49 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRemovePersonActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        selectedMovie(selectedMovie);
+        selectMovie(selectedMovie);
         
     }//GEN-LAST:event_btnClearActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnIconPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconPathActionPerformed
         
         JFileChooser chooser = new JFileChooser(new File("."));
         chooser.showOpenDialog(this);
         
         
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnIconPathActionPerformed
 
-    private static boolean checkConnection(IDataRepository repository) {
+    private void miExportToXMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExportToXMLActionPerformed
+        try {
+            final Optional<File> file = FileUtils.saveFileDialog();
+
+            if (file.isEmpty()) return;
+
+            setLoading(true);
+
+            new Thread(() -> {
+                try {
+                    Collection<Movie> movies = database.getRepository(Movie.class).selectMultiple();
+
+                    System.out.println(movies.size());
+
+                    JAXB.marshal(movies, file.get());
+                    setLoading(false);
+
+                    Runtime.getRuntime().exec("explorer.exe /select," + file.get().getAbsolutePath());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    MessageUtils.showErrorMessage("Error saving file", "File couldn't be saved");
+                }
+            }).start();
+        
+        } catch (Exception ex) {
+                ex.printStackTrace();
+                MessageUtils.showErrorMessage("Error saving file", "File couldn't be saved");
+        }
+    }//GEN-LAST:event_miExportToXMLActionPerformed
+
+    private static boolean checkConnection(IDatabase repository) {
         if (!repository.isConnected()) {
             MessageUtils.showErrorMessage("Connection Error", "A connection to the database could not be established.");
             
@@ -466,14 +518,14 @@ public class Application extends javax.swing.JFrame {
    }
     
     private static void handleLogin() {
-        IDataRepository repository = DataRepositoryFactory.getRepository();
+        IDatabase repository = DatabaseFactory.getDatabase();
         
         if (!checkConnection(repository)) {
             System.exit(1);
             return;
         }
         
-        LoginFrame loginFrame = new LoginFrame(repository);
+        LoginFrame loginFrame = new LoginFrame((IUserRepository<User>) repository.getRepository(User.class));
         loginFrame.setVisible(true);
         
         loginFrame.setCallback(user -> {
@@ -506,12 +558,11 @@ public class Application extends javax.swing.JFrame {
     private javax.swing.JButton btnAddPerson;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnIconPath;
     private javax.swing.JButton btnRemovePerson;
     private javax.swing.JButton btnSave;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
@@ -521,8 +572,10 @@ public class Application extends javax.swing.JFrame {
     private javax.swing.JList<Director> lsDirectors;
     private javax.swing.JMenu mAdmin;
     private javax.swing.JMenu mFile;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem miClearDatabase;
     private javax.swing.JMenuItem miExit;
+    private javax.swing.JMenuItem miExportToXML;
     private javax.swing.JMenuItem miFillDatabase;
     private javax.swing.JMenuItem miLogout;
     private javax.swing.JMenuItem miUserMng;
@@ -535,7 +588,7 @@ public class Application extends javax.swing.JFrame {
 
     private void loadTable() {
         try {
-            movies = new ArrayList<>(repository.selectMovies());
+            movies = new ArrayList<>(database.getRepository(Movie.class).selectMultiple());
             
             tblModel = new MoviesTableModel(movies);
             
@@ -584,32 +637,50 @@ public class Application extends javax.swing.JFrame {
     private Container defaultContainer;
     private void setLoading(boolean state) {
         if (state) {
-            defaultContainer = getContentPane();
+            // only set first time
+            if (defaultContainer == null) 
+                defaultContainer = getContentPane();
             
-            // TODO
+            JPanel pnl = new JPanel();
+            JLabel lb = new JLabel("Loading...");
+            lb.setFont(new Font("Arial", Font.BOLD, 24));
+            pnl.add(lb, BorderLayout.CENTER);
+            
+            setContentPane(pnl);
+            
+            menuBar.setVisible(false);
         } else {
             setContentPane(defaultContainer);
+            menuBar.setVisible(true);
         }
+        
+        revalidate();
+        repaint();
     }
 
     private void selectMovie(Movie selectedMovie) {
-        this.selectedMovie = selectedMovie;
-        
-        tfTitle.setText(selectedMovie.getTitle());
-        taDescription.setText(selectedMovie.getDescription());
-        tfPicturePath.setText(selectedMovie.getBannerPath());
-        
         try {
-            lbBanner.setIcon(
-                        IconUtils.createIcon(new File(selectedMovie.getBannerPath()), 
-                                lbBanner.getPreferredSize().width,
-                                lbBanner.getPreferredSize().height));
+            // refresh with new info from database
+            this.selectedMovie = database.getRepository(Movie.class).select(selectedMovie.getId()).get();
+
+            tfTitle.setText(selectedMovie.getTitle());
+            taDescription.setText(selectedMovie.getDescription());
+            tfPicturePath.setText(selectedMovie.getBannerPath());
+
+            try {
+                lbBanner.setIcon(
+                            IconUtils.createIcon(new File(selectedMovie.getBannerPath()), 
+                                    lbBanner.getPreferredSize().width,
+                                    lbBanner.getPreferredSize().height));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                initPicture(); // set default
+            }
+
+            loadActorList();
+            loadDirectorList();
         } catch (Exception ex) {
             ex.printStackTrace();
-            initPicture(); // set default
         }
-        
-        loadActorList();
-        loadDirectorList();
     }
 }

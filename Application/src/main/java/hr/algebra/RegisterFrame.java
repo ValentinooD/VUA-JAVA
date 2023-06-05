@@ -1,28 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package hr.algebra;
 
-import hr.algebra.dal.IDataRepository;
 import hr.algebra.model.Role;
 import hr.algebra.model.User;
-import java.util.Optional;
+import hr.algebra.dal.repos.IUserRepository;
 
-/**
- *
- * @author User
- */
 public class RegisterFrame extends javax.swing.JFrame {
 
-    private IDataRepository repo;
+    private IUserRepository<User> repo;
 
     private Callback<User> callback;
-    
-    /**
-     * Creates new form RegisterFrame
-     */
-    public RegisterFrame(IDataRepository repo, String username, String password) {
+
+    public RegisterFrame(IUserRepository<User> repo, String username, String password) {
         this(repo);
         
         if (username != null)
@@ -32,7 +20,7 @@ public class RegisterFrame extends javax.swing.JFrame {
             tfPassword.setText(password);
     }
     
-    public RegisterFrame(IDataRepository repo) {
+    public RegisterFrame(IUserRepository<User> repo) {
         this.repo = repo;
         initComponents();
         hideErrors();
@@ -142,10 +130,10 @@ public class RegisterFrame extends javax.swing.JFrame {
         btnCreateAccount.setEnabled(false);
         
         String username = tfUsername.getText().trim();
-        String password = tfPassword.getText();
+        String password = new String(tfPassword.getPassword());
         
         try {
-            if (repo.selectUsers().stream().anyMatch(u -> u.getUsername().equalsIgnoreCase(username))) {
+            if (repo.selectMultiple().stream().anyMatch(u -> u.getUsername().equalsIgnoreCase(username))) {
                 errUsername.setVisible(true);
                 setError("Username already exists");
                 btnCreateAccount.setEnabled(true);
@@ -153,7 +141,7 @@ public class RegisterFrame extends javax.swing.JFrame {
             }
 
             User user = new User(username, password, Role.USER);
-            int userId = repo.createUser(user);
+            int userId = repo.create(user);
             user.setId(userId);
             
             if (callback != null) callback.onFinish(user);
@@ -210,7 +198,7 @@ public class RegisterFrame extends javax.swing.JFrame {
             ok &= false;
         }
         
-        if (tfPassword.getText().length() < 8) {
+        if ((new String(tfPassword.getPassword())).length() < 8) {
             errPassword.setVisible(true);
             errPassword.setToolTipText("Password must be at least 4 characters long.");
             ok &= false;

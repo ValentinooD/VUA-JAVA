@@ -1,6 +1,5 @@
 package hr.algebra.dal.sql;
 
-import hr.algebra.dal.IDataRepositoryCRUD;
 import hr.algebra.model.Actor;
 import hr.algebra.model.Director;
 import hr.algebra.model.Director;
@@ -15,8 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
+import hr.algebra.dal.repos.IPersonRepository;
 
-public class DirectorSQLRepository implements IDataRepositoryCRUD<Director> {
+public class DirectorSQLRepository implements IPersonRepository<Director> {
     
     private static final String ID_DIRECTOR = "IDDirector";
     private static final String FIRST_NAME = "FirstName";
@@ -36,7 +36,8 @@ public class DirectorSQLRepository implements IDataRepositoryCRUD<Director> {
     private static final String SELECT_DIRECTORS_FOR_MOVIE = "{ CALL selectDirectorsForMovie (?) }";
     private static final String ADD_DIRECTORS_TO_MOVIE = "{ CALL addDirectorToMovie (?, ?, ?) }";
     
-    public void addDirectorsToMovie(int movieId, Set<Director> directors) throws Exception {
+    @Override
+    public void addToMovie(int movieId, Set<Director> directors) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection()) {
             for (Director director : directors) {        
@@ -55,7 +56,8 @@ public class DirectorSQLRepository implements IDataRepositoryCRUD<Director> {
         }
     }
     
-    public Collection<Director> getDirectorsForMovie(int movieId) throws Exception {
+    @Override
+    public Collection<Director> getForMovie(int movieId) throws Exception {
         Set<Director> list = new HashSet<>(); // prevent duplicates
         DataSource dataSource = DataSourceSingleton.getInstance();
 

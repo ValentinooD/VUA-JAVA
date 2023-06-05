@@ -2,12 +2,8 @@ package hr.algebra;
 
 import hr.algebra.model.Person;
 
-public class CreatePersonForm extends javax.swing.JFrame {
-    private Class<? extends Person> clazz;
-    private Callback<Person> callback;
-    
-    public CreatePersonForm(Class<? extends Person> type) {
-        this.clazz = type;
+public abstract class CreatePersonForm extends javax.swing.JFrame {
+    public CreatePersonForm() {
         initComponents();
         validateForm();
     }
@@ -104,18 +100,16 @@ public class CreatePersonForm extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    public abstract void create(String firstName, String lastName);
+    
     private void btnConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmActionPerformed
         try {
             String f = tfFirstname.getText();
             String l = tfLastName.getText();
 
-            Person person = clazz.getConstructor(String.class, String.class).newInstance(f, l);
-
             dispose();
 
-            if (callback != null) {
-                callback.onFinish(person);
-            }
+            create(f, l);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -145,9 +139,5 @@ public class CreatePersonForm extends javax.swing.JFrame {
 
     private void validateForm() {
         btnConfirm.setEnabled(!tfFirstname.getText().isEmpty() && !tfLastName.getText().isEmpty());
-    }
-
-    public void setCallback(Callback<Person> callback) {
-        this.callback = callback;
     }
 }
