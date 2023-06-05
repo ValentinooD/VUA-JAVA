@@ -167,6 +167,7 @@ AS
 BEGIN
 	IF EXISTS(SELECT IDActor=@IDActor FROM Actors WHERE FirstName=@FirstName AND LastName=@LastName)
 	BEGIN
+		SET @IDActor = (SELECT IDActor FROM Actors WHERE FirstName=@FirstName AND LastName=@LastName)
 		RETURN
 	END
 
@@ -266,9 +267,7 @@ CREATE TABLE Movies (
 	BannerPath NVARCHAR(200),
 	Link NVARCHAR(300),
 	PublishDate DATE,
-	ShowingDate DATE,
-	DirectorID INT,
-	FOREIGN KEY (DirectorID) REFERENCES Directors(IDDirector)
+	ShowingDate DATE
 );
 GO
 
@@ -280,7 +279,6 @@ CREATE OR ALTER PROC createMovie
 	@Link NVARCHAR(300),
 	@PublishDate DATE,
 	@ShowingDate DATE,
-	@IDDirector INT,
 	@IDMovie INT OUT,
 	@Success INT OUT
 )
@@ -288,8 +286,8 @@ AS
 BEGIN
 	SET @Success = 0
 
-	INSERT INTO Movies (Title, Description, BannerPath, Link, PublishDate, ShowingDate, DirectorID)
-		VALUES (@Title, @Description, @BannerPath, @Link, @PublishDate, @ShowingDate, @IDDirector);
+	INSERT INTO Movies (Title, Description, BannerPath, Link, PublishDate, ShowingDate)
+		VALUES (@Title, @Description, @BannerPath, @Link, @PublishDate, @ShowingDate);
 
 	SET @IDMovie = SCOPE_IDENTITY()
 	SET @Success = 1
@@ -305,7 +303,6 @@ CREATE OR ALTER PROC updateMovie
 	@Link NVARCHAR(300),
 	@PublishDate DATE,
 	@ShowingDate DATE,
-	@IDDirector INT,
 	@Success INT OUT
 )
 AS
@@ -333,10 +330,7 @@ BEGIN
 	
 	IF @ShowingDate IS NOT NULL
 		UPDATE Movies SET ShowingDate=@ShowingDate WHERE IDMovie=@IDMovie
-	
-	IF @IDDirector IS NOT NULL
-		UPDATE Movies SET DirectorID=@IDDirector WHERE DirectorID=@IDDirector
-	
+
 	set @Success = 1
 END
 GO
@@ -441,15 +435,88 @@ BEGIN
 END
 GO
 
+CREATE TABLE DirectorsMoviesRelationship (
+	DirectorID INT,
+	MovieID INT,
+	FOREIGN KEY (DirectorID) REFERENCES Directors(IDDirector),
+	FOREIGN KEY (MovieID) REFERENCES Movies(IDMovie)
+)
+GO
+
+CREATE OR ALTER PROC selectDirectorsForMovie
+(
+	@MovieID INT
+)
+AS
+BEGIN
+	SELECT * FROM Directors WHERE IDDirector 
+		IN (SELECT DirectorID FROM DirectorsMoviesRelationship WHERE MovieID=@MovieID)
+END
+GO
+
+CREATE OR ALTER PROC addDirectorToMovie
+(
+	@DirectorID INT,
+	@MovieID INT,
+	@Success INT OUT
+)
+AS 
+BEGIN
+	SET @Success = 0
+
+	IF EXISTS(SELECT * FROM DirectorsMoviesRelationship WHERE DirectorID=@DirectorID AND MovieID=@MovieID)
+	BEGIN
+		SET @Success = 1 -- it's as if it succeeded
+		RETURN
+	END
+	
+	IF NOT EXISTS(SELECT * FROM Movies WHERE IDMovie=@MovieID)
+	BEGIN
+		RETURN
+	END
+
+	IF NOT EXISTS(SELECT * FROM Directors WHERE IDDirector=@DirectorID)
+	BEGIN
+		RETURN
+	END
+
+	INSERT INTO DirectorsMoviesRelationship(DirectorID, MovieID) VALUES (@DirectorID, @MovieID)
+
+	SET @Success = 1
+END
+GO
+
+CREATE OR ALTER PROC removeDirectorFromMovie
+(
+	@DirectorID INT,
+	@MovieID INT,
+	@Success INT OUT
+)
+AS
+BEGIN
+	SET @Success = 0
+
+	IF NOT EXISTS(SELECT * FROM DirectorsMoviesRelationship WHERE DirectorID=@DirectorID AND MovieID=@MovieID)
+	BEGIN
+		SET @Success = 1 -- it's as if it succeeded
+		RETURN
+	END
+
+	DELETE FROM DirectorsMoviesRelationship WHERE MovieID=@MovieID AND DirectorID=@DirectorID
+	SET @Success = 1
+END
+GO
+
 -------
 
 CREATE OR ALTER PROCEDURE clearDatabase
 AS
 BEGIN
+	DELETE FROM DirectorsMoviesRelationship;
 	DELETE FROM ActorsMoviesRelationship;
 	DELETE FROM Actors;
-	DELETE FROM Movies;
 	DELETE FROM Directors;
+	DELETE FROM Movies;
 END
 GO
 
@@ -459,3 +526,6 @@ GO
 EXEC createUser 'admin', 'admin', 'ADMIN', NULL, NULL;
 EXEC createUser 'simone', 'password', 'USER', NULL, NULL; -- my friend simone
 ------------------------------------------------------------
+
+
+

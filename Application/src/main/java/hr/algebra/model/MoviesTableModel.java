@@ -5,7 +5,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class MoviesTableModel extends AbstractTableModel {
     private static final String[] COLUMN_NAMES
-            = {"Id", "Title", "Director", "Publish date", "Showing date"};
+            = {"Id", "Title", "Publish date", "Showing date"};
     
     private List<Movie> movies;
 
@@ -16,6 +16,10 @@ public class MoviesTableModel extends AbstractTableModel {
     public void setMovies(List<Movie> movies) {
         this.movies = movies;
         fireTableDataChanged();
+    }
+
+    public List<Movie> getMovies() {
+        return movies;
     }
 
     @Override
@@ -40,12 +44,9 @@ public class MoviesTableModel extends AbstractTableModel {
                 return movie.getTitle();
             }
             case 2 -> {
-                return movie.getDirector();
-            }
-            case 3 -> {
                 return movie.getPubishDate().toString();
             }
-            case 4 -> {
+            case 3 -> {
                 return movie.getShowingDate().toString();
             }
         }

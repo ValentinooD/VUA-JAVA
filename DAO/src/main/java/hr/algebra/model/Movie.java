@@ -1,29 +1,31 @@
 package hr.algebra.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Movie {
     private int id;
     private String title;
     private String description;
-    private Director director;
-    private List<Actor> actors;
+    private Set<Director> directors;
+    private Set<Actor> actors;
     private String bannerPath;
     private String link;
     private Date pubishDate;
     private Date showingDate;
 
     public Movie() {
-        this.actors = new ArrayList<>();
+        this.actors = new HashSet<>();
     }
 
-    public Movie(int id, String title, String description, Director director, List<Actor> actors, String bannerPath, String link, Date pubishDate, Date showingDate) {
+    public Movie(int id, String title, String description, Set<Director> directors, Set<Actor> actors, String bannerPath, String link, Date pubishDate, Date showingDate) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.director = director;
+        this.directors = directors;
         this.actors = actors;
         this.bannerPath = bannerPath;
         this.link = link;
@@ -42,12 +44,12 @@ public class Movie {
     public String getDescription() {
         return description;
     }
-
-    public Director getDirector() {
-        return director;
+    
+    public Set<Director> getDirectors() {
+        return directors;
     }
 
-    public List<Actor> getActors() {
+    public Set<Actor> getActors() {
         return actors;
     }
 
@@ -78,12 +80,12 @@ public class Movie {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public void setDirector(Director director) {
-        this.director = director;
+    
+    public void setDirectors(Set<Director> directors) {
+        this.directors = directors;
     }
-
-    public void setActors(List<Actor> actors) {
+    
+    public void setActors(Set<Actor> actors) {
         this.actors = actors;
     }
 

@@ -10,8 +10,11 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.sql.DataSource;
 
 
@@ -29,8 +32,8 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
     
     private static final String SUCCESS = "Success";
 
-    private static final String CREATE_MOVIE = "{ CALL createMovie (?,?,?,?,?,?,?,?,?) }";
-    private static final String UPDATE_MOVIE = "{ CALL updateMovie (?,?,?,?,?,?,?,?,?) }";
+    private static final String CREATE_MOVIE = "{ CALL createMovie (?,?,?,?,?,?,?,?) }";
+    private static final String UPDATE_MOVIE = "{ CALL updateMovie (?,?,?,?,?,?,?,?) }";
     private static final String DELETE_MOVIE = "{ CALL deleteMovie (?) }";
     private static final String SELECT_MOVIE = "{ CALL selectMovie (?) }";
     private static final String SELECT_MOVIES = "{ CALL selectMovies }";
@@ -44,7 +47,7 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
     }
     
     @Override
-    public List<Movie> selectMultiple() throws Exception {
+    public Collection<Movie> selectMultiple() throws Exception {
         List<Movie> list = new ArrayList<>();
 
         DataSource dataSource = DataSourceSingleton.getInstance();
@@ -52,15 +55,14 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
                 CallableStatement stmt = con.prepareCall(SELECT_MOVIES); 
                 ResultSet rs = stmt.executeQuery();) {
             while (rs.next()) {
-                Optional<Director> director = directorRepo.select(rs.getInt(DIRECTOR_ID));
-                if (director.isEmpty()) continue;
-                List<Actor> actors = actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
+                Set<Director> directors = (HashSet<Director>) directorRepo.getDirectorsForMovie(rs.getInt(ID_MOVIE));
+                Set<Actor> actors = (HashSet<Actor>) actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
                 
                 Movie movie = new Movie(
                         rs.getInt(ID_MOVIE), 
                         rs.getString(TITLE), 
                         rs.getString(DESCRIPTION), 
-                        director.get(), 
+                        directors, 
                         actors, 
                         rs.getString(BANNER_PATH), 
                         rs.getString(LINK), 
@@ -85,16 +87,14 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
 
             try (ResultSet rs = stmt.executeQuery();) {
                 if (rs.next()) {
-                    Optional<Director> director = directorRepo.select(rs.getInt(DIRECTOR_ID));
-                    if (director.isEmpty()) return Optional.empty();
-                    
-                    List<Actor> actors = actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
+                    Set<Director> directors = (HashSet<Director>) directorRepo.getDirectorsForMovie(rs.getInt(ID_MOVIE));
+                    Set<Actor> actors = (HashSet<Actor>) actorRepo.getActorsForMovie(rs.getInt(ID_MOVIE));
 
                     Movie movie = new Movie(
                             rs.getInt(ID_MOVIE), 
                             rs.getString(TITLE), 
                             rs.getString(DESCRIPTION), 
-                            director.get(), 
+                            directors, 
                             actors, 
                             rs.getString(BANNER_PATH), 
                             rs.getString(LINK), 
@@ -115,9 +115,6 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
         try (Connection con = dataSource.getConnection(); 
                 CallableStatement stmt = con.prepareCall(CREATE_MOVIE);) {
             
-            if (!directorRepo.select(item.getDirector().getId()).isPresent()) {
-                item.getDirector().setId(directorRepo.create(item.getDirector()));
-            }
             
             stmt.setString(TITLE, item.getTitle());
             stmt.setString(DESCRIPTION, item.getDescription());
@@ -125,7 +122,6 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
             stmt.setString(LINK, item.getLink());
             stmt.setDate(PUB_DATE, new Date(item.getPubishDate().getTime()));
             stmt.setDate(SHOW_DATE, new Date(item.getShowingDate().getTime()));
-            stmt.setInt(ID_DIRECTOR, item.getDirector().getId());
             
             stmt.registerOutParameter(ID_MOVIE, Types.INTEGER);
             stmt.registerOutParameter(SUCCESS, Types.BIT);
@@ -135,8 +131,8 @@ public class MovieSQLRepository implements IDataRepositoryCRUD<Movie> {
             if (!stmt.getBoolean(SUCCESS))
                 throw new RuntimeException("Creation failed");
             
-            List<Actor> actors = item.getActors();
-            actorRepo.addActorsToMovie(stmt.getInt(ID_MOVIE), actors);
+            actorRepo.addActorsToMovie(stmt.getInt(ID_MOVIE), item.getActors());
+            directorRepo.addDirectorsToMovie(stmt.getInt(ID_MOVIE), item.getDirectors());
             
             return stmt.getInt(ID_MOVIE);
         }

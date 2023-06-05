@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -48,7 +49,7 @@ public class UserSQLRepository {
         return Optional.empty();
     }
     
-    public List<User> selectUsers() throws Exception {
+    public Collection<User> selectUsers() throws Exception {
         List<User> list = new ArrayList<>();
 
         DataSource dataSource = DataSourceSingleton.getInstance();

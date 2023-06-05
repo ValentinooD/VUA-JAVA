@@ -6,8 +6,10 @@ import hr.algebra.model.Director;
 import hr.algebra.model.Movie;
 import hr.algebra.model.User;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class SQLRepository implements IDataRepository {
     
@@ -35,7 +37,7 @@ public class SQLRepository implements IDataRepository {
     // Users
     
     @Override
-    public List<User> selectUsers() throws Exception {
+    public Collection<User> selectUsers() throws Exception {
         return userRepo.selectUsers();
     }
 
@@ -67,7 +69,7 @@ public class SQLRepository implements IDataRepository {
     /// Movies
 
     @Override
-    public List<Movie> selectMovies() throws Exception {
+    public Collection<Movie> selectMovies() throws Exception {
         return movieRepo.selectMultiple();
     }
 
@@ -94,7 +96,7 @@ public class SQLRepository implements IDataRepository {
     // Actors
     
     @Override
-    public List<Actor> selectActors() throws Exception {
+    public Collection<Actor> selectActors() throws Exception {
         return actorRepo.selectMultiple();
     }
 
@@ -119,19 +121,19 @@ public class SQLRepository implements IDataRepository {
     }
 
     @Override
-    public void addActorsToMovie(int movieId, List<Actor> actors) throws Exception {
+    public void addActorsToMovie(int movieId, Set<Actor> actors) throws Exception {
         actorRepo.addActorsToMovie(movieId, actors);
     }
 
     @Override
-    public List<Actor> getActorsForMovie(int movieId) throws Exception {
+    public Collection<Actor> getActorsForMovie(int movieId) throws Exception {
         return actorRepo.getActorsForMovie(movieId);
     }
 
     // Directors
     
     @Override
-    public List<Director> selectDirectors() throws Exception {
+    public Collection<Director> selectDirectors() throws Exception {
         return directorRepo.selectMultiple();
     }
 
@@ -157,7 +159,7 @@ public class SQLRepository implements IDataRepository {
     
     // Database
     @Override
-    public void fillDatabase(List<Movie> movies) throws Exception {
+    public void fillDatabase(Collection<Movie> movies) throws Exception {
         for (Movie movie : movies) {
             createMovie(movie);
         }

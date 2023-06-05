@@ -9,8 +9,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.sql.DataSource;
 
 
@@ -35,10 +38,11 @@ public class ActorSQLRepository implements IDataRepositoryCRUD<Actor> {
     private static final String SELECT_ACTORS_FOR_MOVIE = "{ CALL selectActorsForMovie (?) }";
     private static final String ADD_ACTORS_TO_MOVIE = "{ CALL addActorToMovie (?, ?, ?) }";
     
-    public void addActorsToMovie(int movieId, List<Actor> actors) throws Exception {
+    public void addActorsToMovie(int movieId, Set<Actor> actors) throws Exception {
         DataSource dataSource = DataSourceSingleton.getInstance();
         try (Connection con = dataSource.getConnection()) {
-            for (Actor actor : actors) {            
+            for (Actor actor : actors) {        
+                // will return the ID even if it already exists
                 int actorId = create(actor);
                 
                 try (CallableStatement stmt = con.prepareCall(ADD_ACTORS_TO_MOVIE)) {
@@ -53,8 +57,8 @@ public class ActorSQLRepository implements IDataRepositoryCRUD<Actor> {
         }
     }
     
-    public List<Actor> getActorsForMovie(int movieId) throws Exception {
-        List<Actor> list = new ArrayList<>();
+    public Collection<Actor> getActorsForMovie(int movieId) throws Exception {
+        Set<Actor> list = new HashSet<>(); // prevent duplicates
         DataSource dataSource = DataSourceSingleton.getInstance();
 
         try (Connection con = dataSource.getConnection(); 
@@ -76,7 +80,7 @@ public class ActorSQLRepository implements IDataRepositoryCRUD<Actor> {
     }
     
     @Override
-    public List<Actor> selectMultiple() throws Exception {
+    public Collection<Actor> selectMultiple() throws Exception {
         List<Actor> list = new ArrayList<>();
 
         DataSource dataSource = DataSourceSingleton.getInstance();

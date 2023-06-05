@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +37,7 @@ public class RSSParser {
     private static final String DIR = "assets";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     
-    public static List<Movie> getItems(String url) throws Exception {
+    public static List<Movie> getItems() throws Exception {
         HttpURLConnection conn = UrlConnectionFactory.getHttpUrlConnection(RSS_URL);
         List<Movie> list = new ArrayList<>();
         
@@ -93,23 +94,28 @@ public class RSSParser {
                                 }
                                 case ACTORS -> {
                                     if (!data.isEmpty()) {
-                                        List<Actor> actorsList = new ArrayList<>();
-                                        String[] l = data.split(", ");
+                                        Set<Actor> set = new HashSet<>();
+                                        String[] actorsList = data.split(", ");
                                         
-                                        for (String a : l) {
-                                            String[] s = data.split(" ");
-                                            actorsList.add(new Actor(s[0], s[1]));
+                                        for (String actorName : actorsList) {
+                                            String[] s = actorName.split(" ");
+                                            set.add(new Actor(s[0], s[1]));
                                         }
                                         
-                                        item.setActors(actorsList);
+                                        item.setActors(set);
                                     }
                                 }
                                 case DIRECTOR -> {
                                     if (!data.isEmpty()) {
-                                        String[] s = data.split(" ");
+                                        Set<Director> set = new HashSet<>();
+                                        String[] directorsList = data.split(", ");
                                         
-                                        Director director = new Director(s[0], s[1]);
-                                        item.setDirector(director);
+                                        for (String directorName : directorsList) {
+                                            String[] s = directorName.split(" ");
+                                            set.add(new Director(s[0], s[1]));
+                                        }
+                                        
+                                        item.setDirectors(set);
                                     }
                                 }
                                 case SHOWING_DATE -> {
