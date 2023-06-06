@@ -105,6 +105,7 @@ public class Application extends javax.swing.JFrame {
         miClearDatabase = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Java project");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
@@ -376,7 +377,17 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_miExitActionPerformed
 
     private void miUserMngActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miUserMngActionPerformed
-        // TODO add your handling code here:
+        UserManagementForm form = new UserManagementForm(user, (IUserRepository<User>) database.getRepository(User.class));
+        
+        form.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                setEnabled(true);
+                requestFocus();
+            }
+        });
+        setEnabled(false);
+        form.setVisible(true);
     }//GEN-LAST:event_miUserMngActionPerformed
 
     private void miFillDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miFillDatabaseActionPerformed
@@ -401,7 +412,14 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_miFillDatabaseActionPerformed
 
     private void miClearDatabaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miClearDatabaseActionPerformed
-        // TODO add your handling code here:
+        try {
+            database.clearDatabase();
+            
+            loadTable();
+            selectMovie(null);
+        } catch (Exception ex) {
+            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_miClearDatabaseActionPerformed
 
     private void tblMoviesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblMoviesMouseClicked
@@ -413,11 +431,40 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_tblMoviesMouseClicked
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-
+        
+        selectedMovie.setTitle(tfTitle.getText());
+        selectedMovie.setDescription(taDescription.getText());
+        selectedMovie.setBannerPath(tfPicturePath.getText());
+        
+        try {
+            database.getRepository(Movie.class).update(selectedMovie.getId(), selectedMovie);
+            selectMovie(selectedMovie); // refresh
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
 
+        if (selectedMovie == null) return;
+        
+        if (!MessageUtils.showConfirmDialog("Delete?", "Are you sure you want to delete this movie?")) {
+            return;
+        }
+        
+        try {
+            database.getRepository(Movie.class).delete(selectedMovie.getId());
+            
+            tblModel.getMovies().remove(selectedMovie);
+            
+            tblModel.fireTableDataChanged();
+            tblMovies.setModel(tblModel);
+            
+            selectMovie(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnAddPersonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPersonActionPerformed
@@ -596,6 +643,10 @@ public class Application extends javax.swing.JFrame {
             tblMovies.setColumnSelectionAllowed(false);
             tblMovies.setDragEnabled(false);
             tblMovies.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            
+            if (movies.isEmpty()) {
+                selectMovie(null);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -659,6 +710,19 @@ public class Application extends javax.swing.JFrame {
     }
 
     private void selectMovie(Movie selectedMovie) {
+        if (selectedMovie == null) {
+            this.selectedMovie = null;
+            
+            tfTitle.setText("");
+            taDescription.setText("");
+            tfPicturePath.setText("");
+            initPicture();
+            
+            loadActorList();
+            loadDirectorList();
+            return;
+        }
+        
         try {
             // refresh with new info from database
             this.selectedMovie = database.getRepository(Movie.class).select(selectedMovie.getId()).get();
@@ -681,6 +745,8 @@ public class Application extends javax.swing.JFrame {
             loadDirectorList();
         } catch (Exception ex) {
             ex.printStackTrace();
+            
+            selectMovie(null);
         }
     }
 }

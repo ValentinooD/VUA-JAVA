@@ -3,7 +3,7 @@ package hr.algebra.model;
 import java.util.Objects;
 
 public class Person {
-    private int id;
+    private int id = -1; // default
     private String firstName;
     private String lastName;
 

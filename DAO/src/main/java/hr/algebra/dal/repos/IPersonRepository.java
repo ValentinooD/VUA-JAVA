@@ -7,5 +7,6 @@ import java.util.Set;
 
 public interface IPersonRepository<T extends Person> extends IDataRepository<T> {
     public void addToMovie(int movieId, Set<T> set) throws Exception;
+    public void removeFromMovie(int movieId, Set<T> set) throws Exception;
     public Collection<T> getForMovie(int movieId) throws Exception;
 }

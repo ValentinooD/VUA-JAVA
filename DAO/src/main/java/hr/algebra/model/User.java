@@ -1,11 +1,14 @@
 package hr.algebra.model;
 
 public class User {
-    private int id;
+    private int id = -1; // default
     private String username;
     private String password;
     private Role role;
-    
+
+    public User() {
+        this.id = -1;
+    }
     
     public User(String username, String password, Role role) {
         this(-1, username, password, role);

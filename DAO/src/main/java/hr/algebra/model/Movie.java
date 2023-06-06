@@ -1,13 +1,11 @@
 package hr.algebra.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Movie {
-    private int id;
+    private int id = -1; // default
     private String title;
     private String description;
     private Set<Director> directors;
@@ -103,5 +101,27 @@ public class Movie {
 
     public void setShowingDate(Date showingDate) {
         this.showingDate = showingDate;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Movie other = (Movie) obj;
+        return this.id == other.id;
     }
 }

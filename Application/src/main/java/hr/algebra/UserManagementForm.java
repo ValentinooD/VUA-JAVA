@@ -1,19 +1,33 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package hr.algebra;
 
-/**
- *
- * @author User
- */
+import hr.algebra.dal.repos.IUserRepository;
+import hr.algebra.model.Movie;
+import hr.algebra.model.Role;
+import hr.algebra.model.User;
+import hr.algebra.model.UsersTableModel;
+import hr.algebra.utilities.MessageUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class UserManagementForm extends javax.swing.JFrame {
 
-    /**
-     * Creates new form UserManagementForm
-     */
-    public UserManagementForm() {
+    private User user;
+    private IUserRepository<User> repo;
+    
+    private UsersTableModel tblModel;
+    private List<User> usersList;
+    
+    private User selectedUser = null;
+    
+    public UserManagementForm(User user, IUserRepository<User> repo) {
+        this.user = user;
+        this.repo = repo;
+        
+        if (this.user.getRole() != Role.ADMIN) {
+            throw new IllegalStateException("Only ADMIN can access this form.");
+        }
+        
         initComponents();
     }
 
@@ -26,22 +40,248 @@ public class UserManagementForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        tfUsername = new javax.swing.JTextField();
+        tfPassword = new javax.swing.JPasswordField();
+        cbRole = new javax.swing.JComboBox<>();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tbUsers = new javax.swing.JTable();
+        btnSave = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        btnCreateNew = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("User manager");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
+
+        jLabel1.setText("Username:");
+
+        jLabel2.setText("Password:");
+
+        jLabel3.setText("Role:");
+
+        tbUsers.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tbUsers.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbUsersMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tbUsers);
+
+        btnSave.setBackground(new java.awt.Color(0, 102, 0));
+        btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+
+        btnDelete.setBackground(new java.awt.Color(153, 0, 0));
+        btnDelete.setText("Delete");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+
+        btnCreateNew.setText("Create New");
+        btnCreateNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateNewActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(18, 18, 18)
+                        .addComponent(tfUsername))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tfPassword)
+                            .addComponent(cbRole, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addGap(0, 0, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(btnCreateNew)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(tfPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(cbRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSave)
+                    .addComponent(btnDelete)
+                    .addComponent(btnCreateNew))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        
+        if (selectedUser == null) return;
+        
+        if (!MessageUtils.showConfirmDialog("Delete?", "Are you sure you want to delete this user?")) {
+            return;
+        }
+        
+        try {
+            repo.delete(selectedUser.getId());
+            
+            tblModel.getUsers().remove(selectedUser);
+            
+            tblModel.fireTableDataChanged();
+            tbUsers.setModel(tblModel);
+            
+            selectUser(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        try {
+            if (selectedUser == null)
+                selectedUser = new User();
+            
+            selectedUser.setUsername(tfUsername.getText());
+            selectedUser.setPassword(new String(tfPassword.getPassword()));
+            selectedUser.setRole((Role) cbRole.getSelectedItem());
+            
+            if (selectedUser.getId() != -1) {
+                if (!repo.update(selectedUser.getId(), selectedUser)) {
+                    MessageUtils.showErrorMessage("Failed to update", "Could not update this user, please check that the user is unique and everything is filled out correctly.");
+                }
+            } else {
+                selectedUser = repo.select(repo.create(selectedUser)).get();
+                tblModel.getUsers().add(selectedUser);
+            }
+            
+            tblModel.fireTableDataChanged();
+            tbUsers.setModel(tblModel);
+        } catch (Exception ex) {
+            if (ex instanceof RuntimeException) {
+                MessageUtils.showErrorMessage("Error", ex.getMessage());
+                return;
+            }
+            
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        try {
+            for (Role role : Role.values()) {
+                cbRole.addItem(role);
+                cbRole.setSelectedItem(role); // always the last one (worst way possible of doing this)
+            }
+            
+            usersList = new ArrayList<>(repo.selectMultiple());
+            tblModel = new UsersTableModel(usersList);
+            
+            tbUsers.setModel(tblModel);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+    }//GEN-LAST:event_formWindowOpened
+
+    private void btnCreateNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateNewActionPerformed
+        selectUser(null);
+    }//GEN-LAST:event_btnCreateNewActionPerformed
+
+    private void tbUsersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbUsersMouseClicked
+        
+        if (tblModel == null || tbUsers.getSelectedRow() == -1)
+            return;
+        
+        selectUser(tblModel.getUsers().get(tbUsers.getSelectedRow()));
+    }//GEN-LAST:event_tbUsersMouseClicked
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCreateNew;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JComboBox<Role> cbRole;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tbUsers;
+    private javax.swing.JPasswordField tfPassword;
+    private javax.swing.JTextField tfUsername;
     // End of variables declaration//GEN-END:variables
+
+    private void selectUser(User user) {
+        this.selectedUser = user;
+        
+        if (user == null) {
+            this.selectedUser = null;
+            
+            tfUsername.setText("");
+            tfPassword.setText("");
+            cbRole.setSelectedItem(Role.USER);
+            return;
+        }
+        
+        try {
+            tfUsername.setText(selectedUser.getUsername());
+            tfPassword.setText(selectedUser.getPassword());
+            cbRole.setSelectedItem(selectedUser.getRole());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

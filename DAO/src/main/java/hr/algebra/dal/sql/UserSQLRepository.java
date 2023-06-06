@@ -23,7 +23,7 @@ public class UserSQLRepository implements IUserRepository<User> {
 
     private static final String CREATE_USER = "{ CALL createUser (?,?,?,?,?) }";
     private static final String UPDATE_USER = "{ CALL updateUser (?,?,?,?,?) }";
-    private static final String DELETE_USER = "{ CALL deleteUser (?) }";
+    private static final String DELETE_USER = "{ CALL deleteUser (?, ?) }";
     private static final String SELECT_USER = "{ CALL selectUser (?) }";
     private static final String SELECT_USERS = "{ CALL selectUsers }";
     private static final String AUTHENCIATE_USER = "{ CALL authenticateUser(?,?) }";

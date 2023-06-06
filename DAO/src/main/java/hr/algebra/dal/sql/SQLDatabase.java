@@ -8,16 +8,16 @@ import hr.algebra.dal.IDatabase;
 import hr.algebra.model.Actor;
 import hr.algebra.model.Director;
 import hr.algebra.model.User;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.util.HashMap;
+import javax.sql.DataSource;
 
 public class SQLDatabase implements IDatabase {
     
-    private HashMap<Class<?>, IDataRepository<?>> repos;
+    private static final String CLEAR_DATABASE = "{ CALL clearDatabase; }";
     
-    private UserSQLRepository userRepo;
-    private ActorSQLRepository actorRepo;
-    private DirectorSQLRepository directorRepo;
-    private MovieSQLRepository movieRepo;
+    private final HashMap<Class<?>, IDataRepository<?>> repos;
 
     public SQLDatabase() {
         this.repos = new HashMap<>();
@@ -48,9 +48,13 @@ public class SQLDatabase implements IDatabase {
             getRepository(Movie.class).create(movie);
         }
     }
-
+    
     @Override
     public void clearDatabase() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection();
+                CallableStatement stmt = con.prepareCall(CLEAR_DATABASE)) {
+            stmt.execute();
+        }
     }
 }

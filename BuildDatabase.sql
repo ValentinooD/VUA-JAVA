@@ -54,13 +54,21 @@ BEGIN
 	end
 	
 	IF @Username IS NOT NULL
-		UPDATE Users SET Username=@Username WHERE IDUser=IDUser
+	BEGIN
+		IF EXISTS(SELECT * FROM Users WHERE Username=@Username)
+		BEGIN
+			SET @Success = 0
+		END
+	
+		UPDATE Users SET Username=@Username WHERE IDUser=@IDUser
+	END
+
 
 	IF @Password IS NOT NULL
-		UPDATE Users SET Password=@Password WHERE IDUser=IDUser
+		UPDATE Users SET Password=@Password WHERE IDUser=@IDUser
 
 	IF @Role IS NOT NULL
-		UPDATE Users SET Role=@Role WHERE IDUser=IDUser
+		UPDATE Users SET Role=@Role WHERE IDUser=@IDUser
 		
 	set @Success = 1
 END
@@ -341,6 +349,9 @@ CREATE OR ALTER PROC deleteMovie
 )
 AS
 BEGIN
+	DELETE FROM ActorsMoviesRelationship WHERE MovieID=@IDMovie
+	DELETE FROM DirectorsMoviesRelationship WHERE MovieID=@IDMovie
+
 	DELETE FROM Movies WHERE IDMovie=@IDMovie
 END
 GO
@@ -526,6 +537,3 @@ GO
 EXEC createUser 'admin', 'admin', 'ADMIN', NULL, NULL;
 EXEC createUser 'simone', 'password', 'USER', NULL, NULL; -- my friend simone
 ------------------------------------------------------------
-
-
-

@@ -35,6 +35,7 @@ public class DirectorSQLRepository implements IPersonRepository<Director> {
     
     private static final String SELECT_DIRECTORS_FOR_MOVIE = "{ CALL selectDirectorsForMovie (?) }";
     private static final String ADD_DIRECTORS_TO_MOVIE = "{ CALL addDirectorToMovie (?, ?, ?) }";
+    private static final String REMOVE_DIRECTOR_FROM_MOVIE = "{ CALL removeDirectorFromMovie (?, ?, ?) }";
     
     @Override
     public void addToMovie(int movieId, Set<Director> directors) throws Exception {
@@ -47,6 +48,25 @@ public class DirectorSQLRepository implements IPersonRepository<Director> {
                 try (CallableStatement stmt = con.prepareCall(ADD_DIRECTORS_TO_MOVIE)) {
                     stmt.setInt(MOVIE_ID, movieId);
                     stmt.setInt(DIRECTOR_ID, directorId);
+                    
+                    stmt.registerOutParameter(SUCCESS, Types.INTEGER);
+                    
+                    stmt.execute();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void removeFromMovie(int movieId, Set<Director> directors) throws Exception {
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection()) {
+            for (Director director : directors) {
+                if (director.getId() == -1) continue;
+                
+                try (CallableStatement stmt = con.prepareCall(REMOVE_DIRECTOR_FROM_MOVIE)) {
+                    stmt.setInt(MOVIE_ID, movieId);
+                    stmt.setInt(DIRECTOR_ID, director.getId());
                     
                     stmt.registerOutParameter(SUCCESS, Types.INTEGER);
                     

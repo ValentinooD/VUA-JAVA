@@ -17,6 +17,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 import hr.algebra.dal.IDataRepository;
 import hr.algebra.dal.IDatabase;
+import java.nio.channels.AcceptPendingException;
+import java.util.Collections;
 
 
 public class MovieSQLRepository implements IDataRepository<Movie> {
@@ -141,11 +143,45 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
 
     @Override
     public boolean update(int id, Movie item) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection(); CallableStatement stmt = con.prepareCall(UPDATE_MOVIE);) {
+            stmt.setInt(ID_MOVIE, id);
+            stmt.setString(TITLE, item.getTitle());
+            stmt.setString(DESCRIPTION, item.getDescription());
+            stmt.setString(BANNER_PATH, item.getBannerPath());
+            stmt.setString(LINK, item.getLink());
+            stmt.setDate(PUB_DATE, new Date(item.getPubishDate().getTime()));
+            stmt.setDate(SHOW_DATE, new Date(item.getShowingDate().getTime()));
+            
+            stmt.registerOutParameter(SUCCESS, Types.BIT);
+
+            stmt.executeUpdate();
+
+            Collection<Actor> actors = actorRepo.getForMovie(id);
+            Set<Actor> actorsToAdd = new HashSet<>(item.getActors());
+            actorsToAdd.removeAll(actors);
+            actorRepo.addToMovie(id, actorsToAdd);
+            
+            Collection<Director> directors = directorRepo.getForMovie(id);
+            Set<Director> directorsToAdd = new HashSet<>(item.getDirectors());
+            directorsToAdd.removeAll(directors);
+            directorRepo.addToMovie(id, directorsToAdd);
+            
+            return stmt.getBoolean(SUCCESS);
+        }
     }
 
     @Override
     public boolean delete(int id) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection(); 
+                CallableStatement stmt = con.prepareCall(DELETE_MOVIE);) {
+
+            stmt.setInt(ID_MOVIE, id);
+            
+            stmt.executeUpdate();
+            
+            return true;
+        }
     }
 }

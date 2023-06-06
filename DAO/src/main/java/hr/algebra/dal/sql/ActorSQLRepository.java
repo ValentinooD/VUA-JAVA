@@ -35,6 +35,7 @@ public class ActorSQLRepository implements IPersonRepository<Actor> {
     
     private static final String SELECT_ACTORS_FOR_MOVIE = "{ CALL selectActorsForMovie (?) }";
     private static final String ADD_ACTORS_TO_MOVIE = "{ CALL addActorToMovie (?, ?, ?) }";
+    private static final String REMOVE_ACTOR_FROM_MOVIE = "{ CALL removeActorFromMovie (?, ?, ?) }";
     
     @Override
     public void addToMovie(int movieId, Set<Actor> actors) throws Exception {
@@ -47,6 +48,25 @@ public class ActorSQLRepository implements IPersonRepository<Actor> {
                 try (CallableStatement stmt = con.prepareCall(ADD_ACTORS_TO_MOVIE)) {
                     stmt.setInt(MOVIE_ID, movieId);
                     stmt.setInt(ACTOR_ID, actorId);
+                    
+                    stmt.registerOutParameter(SUCCESS, Types.INTEGER);
+                    
+                    stmt.execute();
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void removeFromMovie(int movieId, Set<Actor> actors) throws Exception {
+        DataSource dataSource = DataSourceSingleton.getInstance();
+        try (Connection con = dataSource.getConnection()) {
+            for (Actor actor : actors) {
+                if (actor.getId() == -1) continue;
+                
+                try (CallableStatement stmt = con.prepareCall(REMOVE_ACTOR_FROM_MOVIE)) {
+                    stmt.setInt(MOVIE_ID, movieId);
+                    stmt.setInt(ACTOR_ID, actor.getId());
                     
                     stmt.registerOutParameter(SUCCESS, Types.INTEGER);
                     
