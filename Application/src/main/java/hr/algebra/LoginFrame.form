@@ -134,6 +134,9 @@
       </Events>
     </Component>
     <Component class="javax.swing.JPasswordField" name="tfPassword">
+      <Events>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="loginInformationKeyReleased"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

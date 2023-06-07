@@ -1,7 +1,6 @@
 package hr.algebra;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.IntelliJTheme;
 import hr.algebra.dal.DatabaseFactory;
 import hr.algebra.model.Actor;
 import hr.algebra.model.Director;
@@ -31,13 +30,16 @@ import javax.swing.UnsupportedLookAndFeelException;
 import hr.algebra.dal.IDatabase;
 import hr.algebra.dal.repos.IUserRepository;
 import hr.algebra.utilities.FileUtils;
+import hr.algebra.utilities.JAXBUtils;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.util.Collection;
 import java.util.Optional;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 
 public class Application extends javax.swing.JFrame {
 
@@ -514,15 +516,26 @@ public class Application extends javax.swing.JFrame {
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         selectMovie(selectedMovie);
-        
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnIconPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconPathActionPerformed
-        
         JFileChooser chooser = new JFileChooser(new File("."));
         chooser.showOpenDialog(this);
         
+        if (chooser.getSelectedFile() == null) return;
+        if (selectedMovie == null) return;
         
+        try {
+            selectedMovie.setBannerPath(chooser.getSelectedFile().getAbsolutePath());
+            
+            tfPicturePath.setText(selectedMovie.getBannerPath());
+            lbBanner.setIcon(
+                            IconUtils.createIcon(new File(selectedMovie.getBannerPath()), 
+                                    lbBanner.getPreferredSize().width,
+                                    lbBanner.getPreferredSize().height));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_btnIconPathActionPerformed
 
     private void miExportToXMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExportToXMLActionPerformed
@@ -537,21 +550,23 @@ public class Application extends javax.swing.JFrame {
                 try {
                     Collection<Movie> movies = database.getRepository(Movie.class).selectMultiple();
 
-                    System.out.println(movies.size());
-
-                    JAXB.marshal(movies, file.get());
+                    EncapsulatedCollection e = new EncapsulatedCollection(movies);
+                    JAXBUtils.save(e, file.get().getAbsolutePath());
+                    
                     setLoading(false);
 
                     Runtime.getRuntime().exec("explorer.exe /select," + file.get().getAbsolutePath());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     MessageUtils.showErrorMessage("Error saving file", "File couldn't be saved");
+                    setLoading(false);
                 }
             }).start();
         
         } catch (Exception ex) {
-                ex.printStackTrace();
-                MessageUtils.showErrorMessage("Error saving file", "File couldn't be saved");
+            ex.printStackTrace();
+            MessageUtils.showErrorMessage("Error saving file", "File couldn't be saved");
+            setLoading(false);
         }
     }//GEN-LAST:event_miExportToXMLActionPerformed
 
@@ -747,6 +762,24 @@ public class Application extends javax.swing.JFrame {
             ex.printStackTrace();
             
             selectMovie(null);
+        }
+    }
+       
+    @XmlRootElement(name = "list")
+    private static class EncapsulatedCollection {
+        @XmlElementWrapper
+        @XmlElement(name = "movies")
+        private Collection<Movie> collection;
+
+        public EncapsulatedCollection() {
+        }
+        
+        public EncapsulatedCollection(Collection<Movie> collection) {
+            this.collection = collection;
+        }
+
+        public Collection<Movie> getCollection() {
+            return collection;
         }
     }
 }

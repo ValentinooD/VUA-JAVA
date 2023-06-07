@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import hr.algebra.dal.IDatabase;
 import hr.algebra.dal.repos.IUserRepository;
+import java.awt.event.KeyEvent;
 
 /**
  *
@@ -80,6 +81,12 @@ public class LoginFrame extends javax.swing.JFrame {
         btnCreateAccount.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCreateAccountActionPerformed(evt);
+            }
+        });
+
+        tfPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                loginInformationKeyReleased(evt);
             }
         });
 
@@ -162,8 +169,23 @@ public class LoginFrame extends javax.swing.JFrame {
     private void loginInformationKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginInformationKeyReleased
        String username = tfUsername.getText();
        String password = new String(tfPassword.getPassword());
-        
-       btnLogin.setEnabled(!(username.isEmpty() && password.isEmpty()));
+
+       btnLogin.setEnabled((!tfUsername.getText().isEmpty()) && (tfPassword.getPassword().length > 0));
+       
+       if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+           if (tfUsername.getText().isEmpty()) {
+               tfUsername.requestFocus();
+               return;
+           }
+           
+           if (tfPassword.getPassword().length == 0) {
+               tfPassword.requestFocus();
+               return;
+           }
+           
+            btnLogin.doClick();
+       }
+       
     }//GEN-LAST:event_loginInformationKeyReleased
 
     private void btnCreateAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAccountActionPerformed

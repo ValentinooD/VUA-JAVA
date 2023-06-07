@@ -45,6 +45,11 @@ public class FileUtils {
         return optFile;
     }
     
+    public static void copy(String source, String destination) throws IOException {
+        createDirHierarchy(destination);
+        Files.copy(Paths.get(source), Paths.get(destination));
+    }
+    
     private static void createDirHierarchy(String destination) throws IOException {
         String dir = destination.substring(0, destination.lastIndexOf(File.separator));
         if (!Files.exists(Paths.get(dir))) {

@@ -3,16 +3,34 @@ package hr.algebra.model;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlTransient;
+ 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Movie {
+    @XmlAttribute
     private int id = -1; // default
     private String title;
     private String description;
+    
+    @XmlElementWrapper
+    @XmlElement(name = "directors")
     private Set<Director> directors;
+    
+    @XmlElementWrapper
+    @XmlElement(name = "actors")
     private Set<Actor> actors;
+    
     private String bannerPath;
     private String link;
+    
+    @XmlTransient
     private Date pubishDate;
+    @XmlTransient
     private Date showingDate;
 
     public Movie() {

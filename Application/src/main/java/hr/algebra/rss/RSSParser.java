@@ -161,18 +161,10 @@ public class RSSParser {
         DESCRIPTION("description"),
         LINK("link"),
         PUB_DATE("pubDate"),
-        ORIGINAL_NAME("orignaziv"),
         PICTURE("plakat"),
         DIRECTOR("redatelj"),
         ACTORS("glumci"),
-        DURATION("trajanje"),
-        YEAR("godina"),
-        GENRE("zanr"),
-        TYPE("vrsta"),
-        SHOWING_DATE("datumprikazivanja"),
-        SORT("sort"),
-        TRAILER("trailer")
-        ;
+        SHOWING_DATE("datumprikazivanja");
         
         private final String name;
 

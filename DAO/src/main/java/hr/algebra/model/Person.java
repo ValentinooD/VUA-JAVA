@@ -1,11 +1,19 @@
 package hr.algebra.model;
 
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Person {
+    @XmlAttribute
     private int id = -1; // default
     private String firstName;
     private String lastName;
+    
+    public Person() {
+    }
 
     public Person(String firstName, String lastName) {
         this.firstName = firstName;
