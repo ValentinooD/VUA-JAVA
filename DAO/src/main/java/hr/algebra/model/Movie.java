@@ -1,5 +1,6 @@
 package hr.algebra.model;
 
+import hr.algebra.model.adapters.DateAdapter;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Movie {
@@ -28,13 +29,14 @@ public class Movie {
     private String bannerPath;
     private String link;
     
-    @XmlTransient
-    private Date pubishDate;
-    @XmlTransient
+    @XmlJavaTypeAdapter(DateAdapter.class)
+    private Date publishDate;
+    @XmlJavaTypeAdapter(DateAdapter.class)
     private Date showingDate;
 
     public Movie() {
         this.actors = new HashSet<>();
+        this.directors = new HashSet<>();
     }
 
     public Movie(int id, String title, String description, Set<Director> directors, Set<Actor> actors, String bannerPath, String link, Date pubishDate, Date showingDate) {
@@ -45,7 +47,7 @@ public class Movie {
         this.actors = actors;
         this.bannerPath = bannerPath;
         this.link = link;
-        this.pubishDate = pubishDate;
+        this.publishDate = pubishDate;
         this.showingDate = showingDate;
     }
 
@@ -77,8 +79,8 @@ public class Movie {
         return link;
     }
 
-    public Date getPubishDate() {
-        return pubishDate;
+    public Date getPublishDate() {
+        return publishDate;
     }
 
     public Date getShowingDate() {
@@ -114,7 +116,7 @@ public class Movie {
     }
 
     public void setPubishDate(Date pubishDate) {
-        this.pubishDate = pubishDate;
+        this.publishDate = pubishDate;
     }
 
     public void setShowingDate(Date showingDate) {

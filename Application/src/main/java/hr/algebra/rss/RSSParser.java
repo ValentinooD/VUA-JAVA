@@ -9,7 +9,11 @@ import hr.algebra.utilities.web.UrlConnectionFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -46,7 +50,7 @@ public class RSSParser {
             Optional<TagType> tagType = Optional.empty();
             XMLEventReader reader = XMLInputFactory.newFactory().createXMLEventReader(is);
             StartElement startElement = null;
-            Movie item = null;
+            Movie movie = null;
             
             while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
@@ -57,85 +61,85 @@ public class RSSParser {
                         tagType = TagType.from(qName);
                         // put breakpoint here
                         if (tagType.isPresent() && tagType.get().equals(TagType.ITEM)) {
-                            item = new Movie();
-                            list.add(item);
+                            movie = new Movie();
+                            list.add(movie);
                         }
                     }
                     case XMLStreamConstants.CHARACTERS -> {
-                        if (item == null) continue;
+                        if (movie == null) continue;
                         
-                        if (tagType.isPresent()) {
+                        if (tagType.isPresent() && tagType.get().getFieldName() != null) {
                             Characters characters = event.asCharacters();
                             String data = characters.getData().trim();
                             
-                            switch (tagType.get()) {
-                                case TITLE -> {
-                                    if (!data.isEmpty()) {
-                                        item.setTitle(data);
-                                    }
+                            Type type = movie.getClass().getDeclaredField(tagType.get().getFieldName())
+                                    .getGenericType();
+
+                            if (type instanceof ParameterizedType) {
+                                type = ((ParameterizedType) type).getRawType();
+                            }
+                            
+                            if (tagType.get() == TagType.PICTURE) {
+                                if (!data.isEmpty()) {
+                                    handlePicture(movie, data);
                                 }
-                                case LINK -> {
-                                    if (!data.isEmpty()) {
-                                        item.setLink(data);
-                                    }
+                                continue;
+                            }
+                            
+                            if (type == String.class) {
+                                setValue(movie, tagType.get(), data);
+                            } else if (type == Date.class) {
+                                Date date;
+                                if (tagType.get() == TagType.SHOWING_DATE) {
+                                    date = DATE_FORMAT.parse(data);
+                                } else {
+                                    LocalDateTime ldt = LocalDateTime.parse(data, DateTimeFormatter.RFC_1123_DATE_TIME);
+                                    date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
                                 }
-                                case DESCRIPTION -> {
-                                    if (!data.isEmpty()) {
-                                        item.setDescription(data);
-                                    }
+                                
+                                setValue(movie, tagType.get(), date);
+                            } else if (type == Set.class) {
+                                Type paramType = ((ParameterizedType) movie.getClass().getDeclaredField(tagType.get().getFieldName()).getGenericType())
+                                        .getActualTypeArguments()[0];
+                                
+                                Class<?> clazz = Class.forName(paramType.getTypeName());
+                                
+                                if (data.isEmpty()) continue;
+                                
+                                Set<Object> set = new HashSet<>();
+                                String[] nameList = data.split(", ");
+                                for (String name : nameList) {
+                                    String[] names = name.split(" ");
+                                    
+                                    Object obj = clazz.getDeclaredConstructor(String.class, String.class)
+                                            .newInstance(names[0], names[1]);
+                                    
+                                    set.add(obj);
                                 }
-                                case PUB_DATE -> {
-                                    if (!data.isEmpty()) {
-                                        LocalDateTime ldt = LocalDateTime.parse(data, DateTimeFormatter.RFC_1123_DATE_TIME);
-                                        Date date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-                                        
-                                        item.setPubishDate(date);
-                                    }
-                                }
-                                case ACTORS -> {
-                                    if (!data.isEmpty()) {
-                                        Set<Actor> set = new HashSet<>();
-                                        String[] actorsList = data.split(", ");
-                                        
-                                        for (String actorName : actorsList) {
-                                            String[] s = actorName.split(" ");
-                                            set.add(new Actor(s[0], s[1]));
-                                        }
-                                        
-                                        item.setActors(set);
-                                    }
-                                }
-                                case DIRECTOR -> {
-                                    if (!data.isEmpty()) {
-                                        Set<Director> set = new HashSet<>();
-                                        String[] directorsList = data.split(", ");
-                                        
-                                        for (String directorName : directorsList) {
-                                            String[] s = directorName.split(" ");
-                                            set.add(new Director(s[0], s[1]));
-                                        }
-                                        
-                                        item.setDirectors(set);
-                                    }
-                                }
-                                case SHOWING_DATE -> {
-                                    if (!data.isEmpty()) {
-                                        item.setShowingDate(DATE_FORMAT.parse(data));
-                                    }
-                                }
-                                case PICTURE -> {
-                                    if (!data.isEmpty()) {
-                                        handlePicture(item, data);
-                                    }
-                                }
+                                
+                                setValue(movie, tagType.get(), set);
                             }
                         }
                     }
+
                 }
             }
         }
         
         return list;
+    }
+    
+    private static void setValue(Object obj, TagType tagType, Object value) {
+        try {
+            Field field;
+            field = obj.getClass().getDeclaredField(tagType.getFieldName());
+            field.setAccessible(true);
+            field.set(obj, value);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(RSSParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
    
     private static void handlePicture(Movie item, String pictureUrl) {
@@ -157,19 +161,33 @@ public class RSSParser {
     private enum TagType {
         ITEM("item"),
         
-        TITLE("title"),
-        DESCRIPTION("description"),
-        LINK("link"),
-        PUB_DATE("pubDate"),
-        PICTURE("plakat"),
-        DIRECTOR("redatelj"),
-        ACTORS("glumci"),
-        SHOWING_DATE("datumprikazivanja");
+        
+        TITLE("title", "title"),
+        DESCRIPTION("description", "description"),
+        DIRECTOR("redatelj", "directors"),
+        ACTORS("glumci", "actors"),
+        
+        PICTURE("plakat", "bannerPath"),
+        LINK("link", "link"),
+        
+        PUB_DATE("pubDate", "publishDate"),
+        SHOWING_DATE("datumprikazivanja", "showingDate");
         
         private final String name;
+        private final String fieldName;
 
         private TagType(String name) {
             this.name = name;
+            this.fieldName = null;
+        }
+
+        private TagType(String name, String fieldName) {
+            this.name = name;
+            this.fieldName = fieldName;
+        }
+
+        public String getFieldName() {
+            return fieldName;
         }
 
         private static Optional<TagType> from(String name) {

@@ -123,7 +123,7 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
             stmt.setString(DESCRIPTION, item.getDescription());
             stmt.setString(BANNER_PATH, item.getBannerPath());
             stmt.setString(LINK, item.getLink());
-            stmt.setDate(PUB_DATE, new Date(item.getPubishDate().getTime()));
+            stmt.setDate(PUB_DATE, new Date(item.getPublishDate().getTime()));
             stmt.setDate(SHOW_DATE, new Date(item.getShowingDate().getTime()));
             
             stmt.registerOutParameter(ID_MOVIE, Types.INTEGER);
@@ -150,7 +150,7 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
             stmt.setString(DESCRIPTION, item.getDescription());
             stmt.setString(BANNER_PATH, item.getBannerPath());
             stmt.setString(LINK, item.getLink());
-            stmt.setDate(PUB_DATE, new Date(item.getPubishDate().getTime()));
+            stmt.setDate(PUB_DATE, new Date(item.getPublishDate().getTime()));
             stmt.setDate(SHOW_DATE, new Date(item.getShowingDate().getTime()));
             
             stmt.registerOutParameter(SUCCESS, Types.BIT);

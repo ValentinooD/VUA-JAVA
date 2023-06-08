@@ -44,7 +44,7 @@ public class MoviesTableModel extends AbstractTableModel {
                 return movie.getTitle();
             }
             case 2 -> {
-                return movie.getPubishDate().toString();
+                return movie.getPublishDate().toString();
             }
             case 3 -> {
                 return movie.getShowingDate().toString();
