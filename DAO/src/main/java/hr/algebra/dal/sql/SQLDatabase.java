@@ -30,8 +30,8 @@ public class SQLDatabase implements IDatabase {
 
     @Override
     public boolean isConnected() {
-        try {
-            return DataSourceSingleton.getInstance().getConnection().isValid(1000);
+        try (Connection conn = DataSourceSingleton.getInstance().getConnection()) {
+            return conn.isValid(1000);
         } catch (SQLException ex) {
             return false;
         }
