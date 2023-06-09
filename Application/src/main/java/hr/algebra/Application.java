@@ -456,6 +456,8 @@ public class Application extends javax.swing.JFrame {
         try {
             database.getRepository(Movie.class).update(selectedMovie.getId(), selectedMovie);
             selectMovie(selectedMovie); // refresh
+            
+            tblModel.fireTableDataChanged();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -763,14 +765,14 @@ public class Application extends javax.swing.JFrame {
             // refresh with new info from database
             this.selectedMovie = database.getRepository(Movie.class).select(selectedMovie.getId()).get();
 
-            tfTitle.setText(selectedMovie.getTitle());
-            taDescription.setText(selectedMovie.getDescription());
-            tfPicturePath.setText(selectedMovie.getBannerPath());
-            tfLink.setText(selectedMovie.getLink());
+            tfTitle.setText(this.selectedMovie.getTitle());
+            taDescription.setText(this.selectedMovie.getDescription());
+            tfPicturePath.setText(this.selectedMovie.getBannerPath());
+            tfLink.setText(this.selectedMovie.getLink());
 
             try {
                 lbBanner.setIcon(
-                            IconUtils.createIcon(new File(selectedMovie.getBannerPath()), 
+                            IconUtils.createIcon(new File(this.selectedMovie.getBannerPath()), 
                                     lbBanner.getPreferredSize().width,
                                     lbBanner.getPreferredSize().height));
             } catch (Exception ex) {
