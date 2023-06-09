@@ -17,8 +17,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 import hr.algebra.dal.IDataRepository;
 import hr.algebra.dal.IDatabase;
-import java.nio.channels.AcceptPendingException;
-import java.util.Collections;
 
 
 public class MovieSQLRepository implements IDataRepository<Movie> {
@@ -41,8 +39,8 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
     private static final String SELECT_MOVIE = "{ CALL selectMovie (?) }";
     private static final String SELECT_MOVIES = "{ CALL selectMovies }";
 
-    private ActorSQLRepository actorRepo;
-    private DirectorSQLRepository directorRepo;
+    private final ActorSQLRepository actorRepo;
+    private final DirectorSQLRepository directorRepo;
  
     public MovieSQLRepository(IDatabase database) {
         this.actorRepo = (ActorSQLRepository) database.getRepository(Actor.class);

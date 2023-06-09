@@ -1,15 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package hr.algebra;
 
 import hr.algebra.model.User;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 import java.util.Optional;
-import hr.algebra.dal.IDatabase;
 import hr.algebra.dal.repos.IUserRepository;
 import java.awt.event.KeyEvent;
 
@@ -167,9 +161,6 @@ public class LoginFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLoginActionPerformed
 
     private void loginInformationKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_loginInformationKeyReleased
-       String username = tfUsername.getText();
-       String password = new String(tfPassword.getPassword());
-
        btnLogin.setEnabled((!tfUsername.getText().isEmpty()) && (tfPassword.getPassword().length > 0));
        
        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {

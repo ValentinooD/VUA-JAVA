@@ -1,13 +1,11 @@
 package hr.algebra;
 
 import hr.algebra.dal.repos.IUserRepository;
-import hr.algebra.model.Movie;
 import hr.algebra.model.Role;
 import hr.algebra.model.User;
 import hr.algebra.model.UsersTableModel;
 import hr.algebra.utilities.MessageUtils;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class UserManagementForm extends javax.swing.JFrame {

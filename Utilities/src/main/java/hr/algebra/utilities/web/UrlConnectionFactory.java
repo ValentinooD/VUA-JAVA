@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package hr.algebra.utilities.web;
 
 import java.io.IOException;
@@ -9,10 +5,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-/**
- *
- * @author User
- */
 public class UrlConnectionFactory {
     private UrlConnectionFactory() {
     }

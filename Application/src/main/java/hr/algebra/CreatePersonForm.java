@@ -1,7 +1,5 @@
 package hr.algebra;
 
-import hr.algebra.model.Person;
-
 public abstract class CreatePersonForm extends javax.swing.JFrame {
     public CreatePersonForm() {
         initComponents();

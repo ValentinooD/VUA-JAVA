@@ -1,10 +1,7 @@
 package hr.algebra.rss;
 
-import hr.algebra.model.Actor;
-import hr.algebra.model.Director;
 import hr.algebra.model.Movie;
 import hr.algebra.utilities.FileUtils;
-import hr.algebra.utilities.NumberUtils;
 import hr.algebra.utilities.web.UrlConnectionFactory;
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +10,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

@@ -1,8 +1,6 @@
 package hr.algebra.dal.sql;
 
 import hr.algebra.model.Actor;
-import hr.algebra.model.Role;
-import hr.algebra.model.User;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
