@@ -96,6 +96,8 @@ public class Application extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         lsDirectors = new javax.swing.JList<>();
         btnClear = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        tfLink = new javax.swing.JTextField();
         menuBar = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miLogout = new javax.swing.JMenuItem();
@@ -198,6 +200,8 @@ public class Application extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setText("Link:");
+
         mFile.setText("File");
 
         miLogout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -268,7 +272,10 @@ public class Application extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 705, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -297,7 +304,8 @@ public class Application extends javax.swing.JFrame {
                                         .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(tfLink))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -320,17 +328,21 @@ public class Application extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnRemovePerson))
                             .addComponent(tpPeople, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnDelete)
-                            .addComponent(btnSave)
-                            .addComponent(btnClear)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lbBanner)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnIconPath)
                             .addComponent(tfPicturePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tfLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnDelete)
+                    .addComponent(btnSave)
+                    .addComponent(btnClear))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -434,9 +446,12 @@ public class Application extends javax.swing.JFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         
+        if (selectedMovie == null) return;
+        
         selectedMovie.setTitle(tfTitle.getText());
         selectedMovie.setDescription(taDescription.getText());
         selectedMovie.setBannerPath(tfPicturePath.getText());
+        selectedMovie.setLink(tfLink.getText());
         
         try {
             database.getRepository(Movie.class).update(selectedMovie.getId(), selectedMovie);
@@ -470,6 +485,8 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnAddPersonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPersonActionPerformed
+        
+        if (selectedMovie == null) return;
         
         setEnabled(false);
         CreatePersonForm form = new CreatePersonForm() {
@@ -519,11 +536,12 @@ public class Application extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnIconPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconPathActionPerformed
+        if (selectedMovie == null) return;
+        
         JFileChooser chooser = new JFileChooser(new File("."));
         chooser.showOpenDialog(this);
         
         if (chooser.getSelectedFile() == null) return;
-        if (selectedMovie == null) return;
         
         try {
             selectedMovie.setBannerPath(chooser.getSelectedFile().getAbsolutePath());
@@ -625,6 +643,7 @@ public class Application extends javax.swing.JFrame {
     private javax.swing.JButton btnSave;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
@@ -643,6 +662,7 @@ public class Application extends javax.swing.JFrame {
     private javax.swing.JMenuItem miUserMng;
     private javax.swing.JTextArea taDescription;
     private javax.swing.JTable tblMovies;
+    private javax.swing.JTextField tfLink;
     private javax.swing.JTextField tfPicturePath;
     private javax.swing.JTextField tfTitle;
     private javax.swing.JTabbedPane tpPeople;
@@ -731,6 +751,7 @@ public class Application extends javax.swing.JFrame {
             tfTitle.setText("");
             taDescription.setText("");
             tfPicturePath.setText("");
+            tfLink.setText("");
             initPicture();
             
             loadActorList();
@@ -745,6 +766,7 @@ public class Application extends javax.swing.JFrame {
             tfTitle.setText(selectedMovie.getTitle());
             taDescription.setText(selectedMovie.getDescription());
             tfPicturePath.setText(selectedMovie.getBannerPath());
+            tfLink.setText(selectedMovie.getLink());
 
             try {
                 lbBanner.setIcon(
