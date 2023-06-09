@@ -135,6 +135,8 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
             actorRepo.addToMovie(stmt.getInt(ID_MOVIE), item.getActors());
             directorRepo.addToMovie(stmt.getInt(ID_MOVIE), item.getDirectors());
             
+            
+            
             return stmt.getInt(ID_MOVIE);
         }
     }
@@ -155,6 +157,14 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
 
             stmt.executeUpdate();
 
+            // remove all
+            Collection<Actor> dbActors = actorRepo.getForMovie(item.getId());
+            actorRepo.removeFromMovie(id, new HashSet<>(dbActors));
+            
+            Collection<Director> dbDirectors = directorRepo.getForMovie(item.getId());
+            directorRepo.removeFromMovie(id, new HashSet<>(dbDirectors));
+            
+            // add all
             Collection<Actor> actors = actorRepo.getForMovie(id);
             Set<Actor> actorsToAdd = new HashSet<>(item.getActors());
             actorsToAdd.removeAll(actors);
@@ -164,7 +174,7 @@ public class MovieSQLRepository implements IDataRepository<Movie> {
             Set<Director> directorsToAdd = new HashSet<>(item.getDirectors());
             directorsToAdd.removeAll(directors);
             directorRepo.addToMovie(id, directorsToAdd);
-            
+
             return stmt.getBoolean(SUCCESS);
         }
     }
